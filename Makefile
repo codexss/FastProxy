@@ -1,6 +1,7 @@
 CXX= g++
-CXXFLAGS= -std=c++11
-LDFLAGS= -lpthread
+CXXFLAGS= -std=c++11 -s -Os -pie
+LDFLAGS= -pie
+# -lpthread
 
 BIN= fastproxy
 OBJS= \

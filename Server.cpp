@@ -127,7 +127,9 @@ void* Server::acceptClient(void* arg)
 	int fd = info->getFd();
 	int client;
 	struct sockaddr_in clientaddr;
-	socklen_t clientlen;
+	socklen_t clientlen=1;
+	/* 这里必须初始化一下
+	不然在安卓下会出错 */
 	while((client=accept(fd,(sockaddr *)&clientaddr,&clientlen))!=-1)
 	{
 		struct epoll_event ev;
@@ -157,7 +159,7 @@ void* Server::forwardDown(void* arg)
 		int src = info->getFd();
 		int dest = info->getBorther()->getFd();
 		int len;
-		char buf[1024*32];
+		char buf[1024*8];
 		while((len=recv(src,buf,sizeof(buf),0))>0)
 		{
 			send(dest,buf,len,0);
@@ -214,7 +216,7 @@ void* Server::forwardUp(void* arg)
 							ev.data.ptr = new SockInfo(nfd,SockDown,info);
 							if(epoll_ctl(server->epfd,EPOLL_CTL_ADD,nfd,&ev)!=-1)
 							{
-								std::cout<<"服务器连接成功"<<std::endl;
+								//std::cout<<"服务器连接成功"<<std::endl;
 							}else{
 								close(nfd);
 							}
@@ -229,13 +231,21 @@ void* Server::forwardUp(void* arg)
 		}/* 未连接 */
 		if(info->getBorther()!=NULL)
 		{
-			if(strncmp(buf,"GET",3)==0 || strncmp(buf,"POST",4)==0|| strncmp(buf,"CONNECT",7)==0)
+			if(strncmp(buf,"GET",3)==0 || strncmp(buf,"POST",4)==0)
 			{
 				std::string header(buf);
 				server->config->exec("HTTP",header);
-				send(info->getBorther()->getFd(),header.c_str(),header.length(),0);
+				send(info->getBorther()->getFd(),header.data(),header.length(),0);
+	/*			std::cout<<header.substr(0,header.length())<<std::endl;*/
+			}else if(strncmp(buf,"CONNECT",7)==0){
+			
+				std::string header(buf);
+				server->config->exec("HTTPS",header);
+				send(info->getBorther()->getFd(),header.data(),header.length(),0);
 			}else{
-				send(info->getBorther()->getFd(),buf,len,0);
+				
+		// 这里是转发HTTPS之类的数据		
+		send(info->getBorther()->getFd(),buf,len,0);
 			}
 		}
 	}/* 接收循环 */

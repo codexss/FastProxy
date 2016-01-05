@@ -7,9 +7,9 @@ int main(int argc,char* argv[])
      std::cout<<"请以ROOT权限运行!"<<std::endl;
      return 0;
     }
-    std::ifstream input("/sdcard/default.fp");
+    std::ifstream input("/system/xbin/default.fp");
     if(!input)
-        std::cout<<"无法打开配置文件/sdcard/default.fp"<<std::endl;
+        std::cout<<"无法打开配置文件/system/xbin/default.fp"<<std::endl;
     std::string conf  = "",tmp;
     while(!input.eof())
     {
@@ -17,7 +17,7 @@ int main(int argc,char* argv[])
         conf+=tmp;
     }
 
-	int port = 60881;
+	int port = 60888;
 	Config *c = new Config();
 	try{
 		c->init(conf
@@ -38,6 +38,7 @@ int main(int argc,char* argv[])
 	{
 		std::cerr<<"监听端口"<<port<<"失败"<<std::endl;
 	}else{
+		if(fork()==0)
 		svr.loop();
 	}
 	/*std::string m = "HTTP",
