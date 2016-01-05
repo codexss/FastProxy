@@ -2,8 +2,8 @@
 Config::Config(){
 
 }
-void Config::init(const std::string text){
-	std::istringstream is(text);
+void Config::init(std::ifstream& is){
+	//std::istringstream is(text);
 	std::string line;
 	int linenum=0;
 	ConfigChunk* cc=NULL;
@@ -17,7 +17,6 @@ void Config::init(const std::string text){
 		/*
 		 *  处理输入内容
 		 */
-
 		// 分离操作和参数(cmd和arg)
 		std::string cmd,arg;
 		std::istringstream lis(line);

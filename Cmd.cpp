@@ -75,12 +75,12 @@ Cmd::Cmd(const int linenum,const std::string cmd,const std::string arg)
 {
 	if(cmd.compare("删除")==0)
 	{
-		if(!arg.length()>0)
+		if(!(arg.length()>0))
 			throw ConfigError(linenum,"未指定删除对象");
 		exec = &cmd_del;
 	}else if(cmd.compare("设置首行")==0)
 	{
-		if(!arg.length()>0)
+		if(!(arg.length()>0))
 			throw ConfigError(linenum,"未指定首行数据");
 		exec = &cmd_setfirstline;
 	}

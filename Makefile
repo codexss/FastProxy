@@ -1,7 +1,6 @@
 CXX= g++
-CXXFLAGS= -std=c++11 -s -Os -pie
-LDFLAGS= -pie
-# -lpthread
+CXXFLAGS= -std=c++11 -s -Os
+LDFLAGS=  -lpthread
 
 BIN= fastproxy
 OBJS= \
@@ -13,6 +12,6 @@ $(BIN): $(OBJS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $^
-	
+
 clean:
 	rm -r $(OBJS) 2>/dev/null;

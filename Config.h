@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-
+#include <fstream>
 #include "ConfigError.h"
 #include "Common.h"
 #include "ConfigChunk.h"
@@ -14,7 +14,7 @@
 class Config {
 public:
 	Config();
-	void init(const std::string text);
+	void init(std::ifstream& is);
 	void exec(const std::string cn,std::string &header);
 	virtual ~Config();
 	std::string getValue(std::string key);

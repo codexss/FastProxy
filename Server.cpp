@@ -12,10 +12,13 @@ Server::~Server()
 bool Server::init(int port, Config* config)
 {
 	this->config = config;
-	
+
 	int svrfd = socket(AF_INET,SOCK_STREAM,0);
 	if(svrfd==-1)
+	{
+        std::cout<<"打开Socket失败"<<std::endl;
 		return false;
+    }
 	//绑定地址
 	struct sockaddr_in svraddr;
 	memset(&svraddr,0,sizeof(svraddr));
@@ -28,15 +31,17 @@ bool Server::init(int port, Config* config)
 	if(bind(svrfd,(sockaddr*)&svraddr,sizeof(svraddr))==-1)
 	{
 		close(svrfd);
+		 std::cout<<"绑定端口"<<port<<"失败"<<std::endl;
 		return false;
 	}
-	
+
 	// 监听端口 最大队列20
 	listen(svrfd,20);
-	
+
 	if(setnonblocking(svrfd)==-1)
 	{
 		close(svrfd);
+		 std::cout<<"epoll非阻塞失败"<<std::endl;
 		return false;
 	}
 	// 创建EPOLL监听
@@ -44,6 +49,7 @@ bool Server::init(int port, Config* config)
 	if(epfd==-1)
 	{
 		close(svrfd);
+		 std::cout<<"epoll创建失败"<<std::endl;
 		return false;
 	}
 	struct epoll_event ev;
@@ -53,11 +59,12 @@ bool Server::init(int port, Config* config)
 	{
 		close(svrfd);
 		close(epfd);
+		 std::cout<<"epoll添加失败"<<std::endl;
 		return false;
 	}else{
 		this->epfd = epfd;
 	}
-	
+
 	return true;
 }
 int Server::loop()
@@ -85,25 +92,25 @@ int Server::loop()
 			switch(info->getType())
 			{
 				case SockServer://如果是服务器accept
-					//pthread_create(&pid, NULL, acceptClient, arg);  
+					//pthread_create(&pid, NULL, acceptClient, arg);
 					acceptClient(arg);
 					break;
 				default:
 					char c=0;
 					if(recv(info->getFd(),&c,1,MSG_PEEK)!=1)
 					{
-						//pthread_create(&pid, NULL, destorySock, arg);  
+						//pthread_create(&pid, NULL, destorySock, arg);
 						destorySock(arg);
 					}else{
 						switch(info->getType())
 						{
 							case SockUp:
-								
-								pthread_create(&pid, NULL, forwardUp, arg);  
+
+								pthread_create(&pid, NULL, forwardUp, arg);
 								//forwardUp(arg);
 								break;
 							case SockDown:
-								pthread_create(&pid, NULL, forwardDown, arg);  
+								pthread_create(&pid, NULL, forwardDown, arg);
 								//forwardDown(arg);
 								break;
 							default:
@@ -115,7 +122,7 @@ int Server::loop()
 			// 其他Socket可读
 		}/* 事件i列表循环 */
 	}/* epoll死循环 */
-	
+
 	return 0;
 }
 
@@ -238,13 +245,13 @@ void* Server::forwardUp(void* arg)
 				send(info->getBorther()->getFd(),header.data(),header.length(),0);
 	/*			std::cout<<header.substr(0,header.length())<<std::endl;*/
 			}else if(strncmp(buf,"CONNECT",7)==0){
-			
+
 				std::string header(buf);
 				server->config->exec("HTTPS",header);
 				send(info->getBorther()->getFd(),header.data(),header.length(),0);
 			}else{
-				
-		// 这里是转发HTTPS之类的数据		
+
+		// 这里是转发HTTPS之类的数据
 		send(info->getBorther()->getFd(),buf,len,0);
 			}
 		}
@@ -268,6 +275,6 @@ void* Server::destorySock(void* arg)
 	ev.events = EPOLLIN | EPOLLET;
 	epoll_ctl(server->epfd,EPOLL_CTL_DEL,info->getFd(),&ev);
 	close(info->getFd());
-	
+
 	return NULL;
 }

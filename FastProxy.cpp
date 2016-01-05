@@ -2,54 +2,89 @@
 
 int main(int argc,char* argv[])
 {
-    if(getuid()!=0)
-    {
-     std::cout<<"请以ROOT权限运行!"<<std::endl;
-     return 0;
-    }
-    std::ifstream input("/system/xbin/default.fp");
+    #ifdef __arm
+    std::string confpath = "/system/xbin/default.fp";
+    #else
+    std::string confpath = "./default.fp";
+    #endif // __arm
+
+    std::ifstream input(confpath);
     if(!input)
-        std::cout<<"无法打开配置文件/system/xbin/default.fp"<<std::endl;
+    {
+        std::cout<<"无法打开配置文件"<<confpath<<std::endl;
+        return 0;
+    }/*
     std::string conf  = "",tmp;
     while(!input.eof())
     {
         getline(input,tmp);
-        conf+=tmp;
+        conf+=tmp+"\n";
     }
-
+*/
 	int port = 60888;
 	Config *c = new Config();
 	try{
-		c->init(conf
-			/*"设置 HTTP代理 192.168.1.1:80\n"
-			"设置 HTTPS代理 183.111.169.201:3128\n"*/
-			/*"模块 HTTP\n"
-			"删除 Host\n"
-			"删除 X-Online-Host\n"
-			"设置首行 [M] [U] [V]\\r\\n"*/
-			);
+		c->init(input);
+        // 端口控制
+        std::string strport = c->getValue("PORT");
+        if(strport.empty())
+        {
+            strport = c->getValue("端口");
+        }
+        if(!strport.empty())
+        {
+
+            int nport = atoi(strport.c_str());
+            if(nport > 0 && nport <= 0xFFFF)
+            {
+                port = nport;
+            }
+        }
+        // UID控制
+        std::string struid = c->getValue("UID");
+        if(!struid.empty())
+        {
+            int uid;
+            if(struid.compare("root")==0)
+            {
+                uid=0;
+                struid += "(0)";
+            }else if(struid.compare("net_raw")==0)
+            {
+                uid=3004;
+                struid += "(3004)";
+            }else{
+                uid = atoi(struid.c_str());
+            }
+            // 如果当前UID不匹配
+            if(uid != getuid())
+            {
+                if(setuid(uid)==0)
+                {
+                    std::cout<<"切换到UID:"<<struid<<"成功"<<std::endl;
+                }else{
+                    std::cout<<"切换到UID:"<<struid<<"失败，可能是权限不足"<<std::endl;
+                    return 0;
+                }
+            }
+        }
 	}catch(ConfigError &e)
 	{
 		std::cout<<e;
 		delete c;
 	}
+
+	// 关闭输入文件
+	if(!input)
+        input.close();
+
 	Server svr;
-	if(!svr.init(port,c))
+	if(svr.init(port,c))
 	{
-		std::cerr<<"监听端口"<<port<<"失败"<<std::endl;
-	}else{
 		if(fork()==0)
-		svr.loop();
+            svr.loop();
+        else
+            std::cout<<"服务在"<<port<<"端口后台运行"<<std::endl;
 	}
-	/*std::string m = "HTTP",
-			h =
-					"GET http://www.baidu.com/index.php HTTP/1.0\r\n"
-					"Host: www.baidu.com\r\n"
-					"Host: www.baidu.com\r\n"
-					"Host2: www.sogou.com\r\n"
-					;
-	c->exec(m,h);
-	std::cout<<std::endl<<std::endl<<h;
-std::cin>>m;*/
 	return 0;
 }
