@@ -8,7 +8,14 @@ Server::Server()
 Server::~Server()
 {
 }
-
+void Server::setDump(bool dump)
+{
+	this->dump = dump;
+}
+bool Server::getDump()
+{
+	return this->dump;
+}
 bool Server::init(int port, Config* config)
 {
 	this->config = config;
@@ -245,16 +252,22 @@ void* Server::forwardUp(void* arg)
 				std::string header(buf);
 				server->config->exec("HTTP",header);
 				send(info->getBorther()->getFd(),header.data(),header.length(),0);
-	/*			std::cout<<header.substr(0,header.length())<<std::endl;*/
+				if(server->getDump())
+					std::cout
+						<<"=========================================="<<std::endl
+						<<header<<std::endl;
 			}else if(strncmp(buf,"CONNECT",7)==0){
 
 				std::string header(buf);
 				server->config->exec("HTTPS",header);
 				send(info->getBorther()->getFd(),header.data(),header.length(),0);
+				if(server->getDump())
+					std::cout
+						<<"=========================================="<<std::endl
+						<<header<<std::endl;
 			}else{
-
-		// 这里是转发HTTPS之类的数据
-		send(info->getBorther()->getFd(),buf,len,0);
+				// 这里是转发HTTPS之类的数据
+				send(info->getBorther()->getFd(),buf,len,0);
 			}
 		}
 	}/* 接收循环 */

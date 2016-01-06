@@ -9,8 +9,6 @@ void version(int argc,char* argv[])
 		<<"\t-u\tUID\tS设置运行UID"<<std::endl
 		<<"\t-f\tFILE\t设置配置文件名"<<std::endl
 		<<std::endl
-		<<"源代码已同步到:"<<std::endl
-		<<" https://github.com/tsln1998/FastProxy.git"<<std::endl
 		<<"希望有更多的人能跟我一起开发^_^"<<std::endl
 		<<std::endl
 	;
@@ -22,6 +20,7 @@ int main(int argc, char* argv[])
 	std::string confname = "conf.fp", // 配置名
 			struid,	// UID
 			strport; // 端口
+	bool dump = false;
 	int argi;
 	for(argi=1;argi<argc;argi++)
 		if(argv[argi][0]=='-')
@@ -45,6 +44,11 @@ int main(int argc, char* argv[])
 			case 'U':
 				if(argi+1<argc)
 					struid = argv[++argi];
+				break;
+			// 开启抓包
+			case 'd':
+			case 'D':
+				dump=true;
 				break;
 			default:
 				version(argc,argv);
@@ -96,6 +100,7 @@ int main(int argc, char* argv[])
 	Server svr;
 	if (svr.init(port, c))
 	{
+		svr.setDump(dump);
 		// UID控制
 		if (struid.empty())
 			std::string struid = c->getValue("UID");
@@ -131,10 +136,18 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-		if (fork() == 0)
+		std::cout << "服务在" << port << "端口后台运行" << std::endl;
+		if(!dump)
+		{
+			if (fork() == 0)
+			{
+				svr.loop();
+				return 0;
+			}
+		}else{
 			svr.loop();
-		else
-			std::cout << "服务在" << port << "端口后台运行" << std::endl;
+		}
+
 	}
 	return 0;
 }

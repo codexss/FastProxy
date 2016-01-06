@@ -35,12 +35,15 @@ public:
 	~Server();
 	bool init(int port,Config* config);
 	int loop();
+	void setDump(bool dump);//是否抓包
+	bool getDump();
 	static void* acceptClient(void* arg);
 	static void* forwardUp(void* arg);
 	static void* forwardDown(void* arg);
 	static void* destorySock(void* arg);
 private:
 	int epfd;
+	bool dump; // 是否抓包
 	Config* config;
 };
 

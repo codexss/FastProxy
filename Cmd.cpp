@@ -6,11 +6,6 @@ Cmd::~Cmd()
 void Cmd::eval(std::string& str, const std::string old)
 {
 	{
-		// H引用转向Host
-		const std::regex hp("\\[H\\]");
-		str=std::regex_replace(str,hp,"[Host]");
-	}
-	{
 		// \r \n \t
 		const std::regex rp("\\\\r");
 		str=std::regex_replace(str,rp,"\r");
@@ -19,7 +14,7 @@ void Cmd::eval(std::string& str, const std::string old)
 		const std::regex tp("\\\\t");
 		str=std::regex_replace(str,tp,"\t");
 	}
-	
+
 	const std::regex namep("(\\[[^\\]]+\\])");
 	std::smatch namer;
 	int regexn = 30;// 替换次数 防止造成死循环
@@ -32,7 +27,7 @@ void Cmd::eval(std::string& str, const std::string old)
 		name=name.substr(1,name.length()-2);
 		// 替换之后的引用
 		std::string ns="";
-		
+
 		// 请求类型引用
 		if(name.compare("M")==0 || name.compare("method")==0)
 		{
@@ -43,8 +38,27 @@ void Cmd::eval(std::string& str, const std::string old)
 		{
 			std::istringstream is(old);
 			is>>ns>>ns;
-			const std::regex nsnp("(http|https)://[^/]*");
+			const std::regex nsnp("http://[^/]*");
 			ns = std::regex_replace(ns,nsnp,"");
+		}// H引用
+		else if(name.compare("H")==0)
+		{
+			std::istringstream is(old);
+			is>>ns>>ns;
+			const std::regex nsp("(http://[^/]*|^[^/]+)");
+			std::smatch nsr;
+			if(std::regex_search(ns,nsr,nsp))
+			{
+				if(nsr.size()>0)
+				{
+					ns = nsr.str();
+					if(ns.substr(0,7).compare("http://")==0)
+					{
+						ns = nsr.str();
+						ns = ns.substr(7,ns.length()-7);
+					}
+				}
+			}
 		}// 协议版本引用
 		else if(name.compare("V")==0 ||name.compare("version")==0)
 		{
@@ -65,7 +79,7 @@ void Cmd::eval(std::string& str, const std::string old)
 				}
 			}
 		}
-		
+
 		const std::regex nsp("\\["+name+"\\]");
 		str=std::regex_replace(str,nsp,ns);
 	}
@@ -103,8 +117,7 @@ void Cmd::cmd_setfirstline(const std::string arg, std::string& header,
 {
 	std::string ns = arg;
 	eval(ns,old);
-	
+
 	const std::regex hp("^[^\\r\\n]*(\\r\\n|\\r|\\n)");
 	header=std::regex_replace(header,hp,ns);
 }
-
