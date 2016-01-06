@@ -44,7 +44,21 @@ int main(int argc,char* argv[])
                 port = nport;
             }
         }
-        // UID控制
+        
+	}catch(ConfigError &e)
+	{
+		std::cout<<e;
+		delete c;
+	}
+
+	// 关闭输入文件
+	if(!input)
+        input.close();
+
+	Server svr;
+	if(svr.init(port,c))
+	{
+		// UID控制
         std::string struid = c->getValue("UID");
         if(!struid.empty())
         {
@@ -72,19 +86,6 @@ int main(int argc,char* argv[])
                 }
             }
         }
-	}catch(ConfigError &e)
-	{
-		std::cout<<e;
-		delete c;
-	}
-
-	// 关闭输入文件
-	if(!input)
-        input.close();
-
-	Server svr;
-	if(svr.init(port,c))
-	{
 		if(fork()==0)
             svr.loop();
         else
