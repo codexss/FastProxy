@@ -34,26 +34,26 @@ void Cmd::eval(std::string& str, const std::string old)
 		std::string ns="";
 		
 		// 请求类型引用
-		if(name.compare("M")==0)
+		if(name.compare("M")==0 || name.compare("method")==0)
 		{
 			std::istringstream is(old);
 			is>>ns;
 		}// URI引用
-		else if(name.compare("U")==0)
+		else if(name.compare("U")==0 || name.compare("uri")==0)
 		{
 			std::istringstream is(old);
 			is>>ns>>ns;
 			const std::regex nsnp("(http|https)://[^/]*");
 			ns = std::regex_replace(ns,nsnp,"");
 		}// 协议版本引用
-		else if(name.compare("V")==0)
+		else if(name.compare("V")==0 ||name.compare("version")==0)
 		{
 			std::istringstream is(old);
 			is>>ns>>ns>>ns;
 		}
 		else // 从原始头域查找
 		{
-			const std::regex nsp(name+"\\s*:\\s*[^\\r\\n]*");
+			const std::regex nsp(name+"\\s*:\\s*[^\\r\\n]*",std::regex::icase);
 			std::smatch nsr;
 			if(std::regex_search(old,nsr,nsp))
 			{

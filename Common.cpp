@@ -36,3 +36,18 @@ int setnonblocking(int sock)
     }
 	return 0;
 }
+int setblocking(int sock)
+{
+    int opts;
+    opts=fcntl(sock,F_GETFL);
+    if(opts<0)
+    {
+        return -1;
+    }
+    opts = 0;
+    if(fcntl(sock,F_SETFL,opts)<0)
+    {
+		return -1;
+    }
+	return 0;
+}

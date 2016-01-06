@@ -12,6 +12,7 @@ std::string& rtrim(std::string& text);
 
 // 设置Socket非阻塞
 int setnonblocking(int sock);
-
+// 设置Socket阻塞
+int setblocking(int sock);
 
 #endif /* COMMON_H_ */

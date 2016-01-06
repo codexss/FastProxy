@@ -169,7 +169,9 @@ void* Server::forwardDown(void* arg)
 		char buf[1024*8];
 		while((len=recv(src,buf,sizeof(buf),0))>0)
 		{
+			//setblocking(dest);
 			send(dest,buf,len,0);
+			//setnonblocking(dest);
 		}
 	}
 	return NULL;
