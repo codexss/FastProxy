@@ -17,4 +17,4 @@ $(BIN): $(OBJS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 clean:
-	rm -r $(OBJS) 2>/dev/null;
+	@rm -rf $(OBJS) 2>/dev/null
