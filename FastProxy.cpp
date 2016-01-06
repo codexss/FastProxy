@@ -2,11 +2,15 @@
 
 int main(int argc,char* argv[])
 {
-    #ifdef __arm
+    /*#ifdef __ANDROID__
     std::string confpath = "/system/xbin/default.fp";
     #else
     std::string confpath = "./default.fp";
-    #endif // __arm
+    #endif // __arm*/
+    char _abspath[128];
+    realpath(argv[0],_abspath);
+    std::string confpath(_abspath);
+    confpath=confpath.substr(0,confpath.find_last_of("/")) + "/conf.fp";
 
     std::ifstream input(confpath);
     if(!input)

@@ -1,5 +1,5 @@
 CXX= g++
-CXXFLAGS= -std=c++11 -s -Os
+CXXFLAGS= -std=c++11 -Os
 LDFLAGS=  -lpthread
 
 BIN= fastproxy
@@ -7,6 +7,9 @@ OBJS= \
 			Cmd.o ConfigChunk.o ConfigError.o \
 			FastProxy.o SockInfo.o Common.o \
 			Config.o ConfigValue.o Server.o
+all: $(BIN)
+	
+
 $(BIN): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
