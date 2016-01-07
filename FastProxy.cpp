@@ -15,6 +15,12 @@ void version(int argc,char* argv[])
 	;
 }
 
+void *runserver(void* server)
+{
+	((Server*)server)->loop();
+	return NULL;
+}
+
 int main(int argc, char* argv[])
 {
 
@@ -148,13 +154,28 @@ int main(int argc, char* argv[])
 		{
 			if (fork() == 0)
 			{
-				svr.loop();
-				return 0;
+				/*
+				* 守护进程
+				* 防止意外退出
+				*/
+				int fi;
+				while((fi=fork())!=-1)
+				{
+					if(fi == 0)
+					{
+						pthread_t tid;
+						pthread_create(&tid,NULL,runserver,&svr);
+						while (getppid() != 1) sleep(1);
+					}else{
+						wait(NULL);
+					}
+				}
 			}
 		}else{
 			svr.loop();
 		}
 
 	}
+	exit(0);
 	return 0;
 }
