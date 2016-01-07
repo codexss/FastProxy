@@ -109,16 +109,17 @@ int Server::loop()
 						//pthread_create(&pid, NULL, destorySock, arg);
 						destorySock(arg);
 					}else{
+
 						switch(info->getType())
 						{
 							case SockUp:
 
-								pthread_create(&pid, NULL, forwardUp, arg);
-								//forwardUp(arg);
+								//pthread_create(&pid, NULL, forwardUp, arg);
+								forwardUp(arg);
 								break;
 							case SockDown:
-								pthread_create(&pid, NULL, forwardDown, arg);
-								//forwardDown(arg);
+								//pthread_create(&pid, NULL, forwardDown, arg);
+								forwardDown(arg);
 								break;
 							default:
 								break;
@@ -174,12 +175,15 @@ void* Server::forwardDown(void* arg)
 		int dest = info->getBorther()->getFd();
 		int len;
 		char buf[1024*8];
+
+		//setblocking(dest);
 		while((len=recv(src,buf,sizeof(buf),0))>0)
 		{
 			//setblocking(dest);
 			send(dest,buf,len,0);
 			//setnonblocking(dest);
 		}
+		//setnonblocking(dest);
 	}
 	return NULL;
 }
@@ -268,7 +272,10 @@ void* Server::forwardUp(void* arg)
 			}else{
 				// 这里是转发HTTPS之类的数据
 				send(info->getBorther()->getFd(),buf,len,0);
+
 			}
+			if(server->getDump())
+				std::cout<<buf<<std::endl;
 		}
 	}/* 接收循环 */
 	return NULL;
