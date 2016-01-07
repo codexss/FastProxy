@@ -6,8 +6,9 @@ void version(int argc,char* argv[])
 		<<std::endl
 		<<VERS<<" Code By Tsln"<<std::endl
 		<<"\t-p\tPORT\t设置监听端口"<<std::endl
-		<<"\t-u\tUID\tS设置运行UID"<<std::endl
+		<<"\t-u\tUID\t设置运行UID"<<std::endl
 		<<"\t-f\tFILE\t设置配置文件名"<<std::endl
+		<<"\t-d\t    \t抓包模式"<<std::endl
 		<<std::endl
 		<<"希望有更多的人能跟我一起开发^_^"<<std::endl
 		<<std::endl
@@ -55,11 +56,17 @@ int main(int argc, char* argv[])
 				return 0;
 			}
 		}
-
-	char _abspath[128];
-	realpath(argv[0], _abspath);
-	std::string confpath(_abspath);
-	confpath = confpath.substr(0, confpath.find_last_of("/")) + "/" + confname;
+    // 支持绝对路径
+		std::string confpath;
+    if(confname[0]!='/')
+    {
+        char _abspath[128];
+        realpath(argv[0], _abspath);
+        confpath = _abspath;
+        confpath = confpath.substr(0, confpath.find_last_of("/")) + "/" + confname;
+    }else{
+        confpath = confname;
+    }
 
 	std::ifstream input(confpath);
 	if (!input)
