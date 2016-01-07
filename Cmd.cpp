@@ -40,22 +40,44 @@ void Cmd::eval(std::string& str, const std::string old)
 			is>>ns>>ns;
 			const std::regex nsnp("http://[^/]*");
 			ns = std::regex_replace(ns,nsnp,"");
-		}// H引用
-		else if(name.compare("H")==0)
+		}// H Host host引用
+		else if(
+			name.compare("H")==0
+			|| name.compare("Host")==0
+			|| name.compare("host")==0
+		)
 		{
-			std::istringstream is(old);
-			is>>ns>>ns;
-			const std::regex nsp("(http://[^/]*|^[^/]+)");
-			std::smatch nsr;
-			if(std::regex_search(ns,nsr,nsp))
 			{
-				if(nsr.size()>0)
+				// 首先查找Host头域
+				const std::regex nsp("Host\\s*:\\s*[^\\r\\n]*",std::regex::icase);
+				std::smatch nsr;
+				if(std::regex_search(old,nsr,nsp))
 				{
-					ns = nsr.str();
-					if(ns.substr(0,7).compare("http://")==0)
+					if(namer.size()>0)
 					{
 						ns = nsr.str();
-						ns = ns.substr(7,ns.length()-7);
+						const std::regex nsnp("Host\\s*:\\s*",std::regex::icase);
+						ns = std::regex_replace(ns,nsnp,"");
+					}
+				}
+			}
+			// 如果Host不存在，则从URI里查找
+			if(ns.empty())
+			{
+				std::istringstream is(old);
+				is>>ns>>ns;
+				const std::regex nsp("(http://[^/]*|^[^/]+)");
+				std::smatch nsr;
+				if(std::regex_search(ns,nsr,nsp))
+				{
+					if(nsr.size()>0)
+					{
+						ns = nsr.str();
+						if(ns.substr(0,7).compare("http://")==0)
+						{
+							ns = nsr.str();
+							ns = ns.substr(7,ns.length()-7);
+						}
 					}
 				}
 			}
@@ -74,7 +96,7 @@ void Cmd::eval(std::string& str, const std::string old)
 				if(namer.size()>0)
 				{
 					ns = nsr.str();
-					const std::regex nsnp(name+"\\s*:\\s*");
+					const std::regex nsnp(name+"\\s*:\\s*",std::regex::icase);
 					ns = std::regex_replace(ns,nsnp,"");
 				}
 			}
