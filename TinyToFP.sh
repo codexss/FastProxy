@@ -14,6 +14,11 @@ done
 exit
 fi
 
+if [ "$mode" != "wap" ]; then
+echo "# net模式不支持移植"
+exit
+fi
+
 echo "# 本模式由TinyToFP自动生成"
 echo
 echo
