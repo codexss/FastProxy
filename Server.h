@@ -15,15 +15,13 @@
 
 #include <iostream>
 #include <string>
+// forwardUp用到的传输类型
+typedef char HeaderType;
+#define HT_HTTP		0
+#define HT_HTTPS	1
+#define HT_OTHER	2
+//enum HeaderType{HT_HTTP=0,HT_HTTPS=1，HT_OTHER=2};
 class Server;
-/*
-class ServerArg
-{
-public:
-	ServerArg(Server* server,SockInfo* info):server(server),info(info){};
-	Server* server;
-	SockInfo* info;
-};*/
 typedef struct{
 	Server* server;
 	SockInfo* info;

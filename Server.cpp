@@ -198,22 +198,33 @@ void* Server::forwardUp(void* arg)
 	int len;
 	while((len=recv(src,buf,sizeof(buf),0))>0)
 	{
+
 		buf[len]=0;
+		HeaderType ht = HT_OTHER;
+		if(
+				strncmp(buf,"GET",3)==0 ||
+				strncmp(buf,"POST",4)==0 ||
+				strncmp(buf,"HEAD",4)==0 ||
+				strncmp(buf,"PUT",4)==0 ||
+				strncmp(buf,"OPTIONS",4)==0 ||
+				strncmp(buf,"DELETE",4)==0 ||
+				strncmp(buf,"TRACE",4)==0
+		)
+			ht=HT_HTTP;
+		else if(strncmp(buf,"CONNECT",7)==0)
+			ht=HT_HTTPS;
 		// 如果连接了目标
 		if(info->getBorther()==NULL)
 		{
 			//没有连接目标
 			std::string addr;
-			if(strncmp(buf,"GET",3)==0 || strncmp(buf,"POST",4)==0)
-			{
-				// HTTP连接
+			if(ht==HT_HTTP)
 				addr=server->config->getValue("HTTP代理");
-			}
-			else if(strncmp(buf,"CONNECT",7)==0)
-			{
+			else
 				// HTTPS连接
 				addr=server->config->getValue("HTTPS代理");
-			}
+
+			// 如果地址设置的地址不为空
 			if(!addr.empty())
 			{
 				std::string ip =addr.substr(0,addr.find_first_of(":"));
@@ -247,35 +258,34 @@ void* Server::forwardUp(void* arg)
 						close(nfd);
 					}
 				}
-			}/* 连接 */
-		}/* 未连接 */
+			}/* 设置地址不为空 */
+		}/* 如果未连接 */
 		if(info->getBorther()!=NULL)
 		{
-			if(strncmp(buf,"GET",3)==0 || strncmp(buf,"POST",4)==0)
+			if(ht!=HT_OTHER)
 			{
 				std::string header(buf);
-				server->config->exec("HTTP",header);
+				if(ht==HT_HTTP)
+					server->config->exec("HTTP",header);
+				else
+					server->config->exec("HTTPS",header);
 				send(info->getBorther()->getFd(),header.data(),header.length(),0);
+				// 输出抓包信息
 				if(server->getDump())
 					std::cout
-						<<"=========================================="<<std::endl
-						<<header<<std::endl;
-			}else if(strncmp(buf,"CONNECT",7)==0){
-
-				std::string header(buf);
-				server->config->exec("HTTPS",header);
-				send(info->getBorther()->getFd(),header.data(),header.length(),0);
-				if(server->getDump())
-					std::cout
-						<<"=========================================="<<std::endl
-						<<header<<std::endl;
-			}else{
+					<<"=========================================="<<std::endl
+					<<header<<std::endl;
+			}
+			else
+			{
 				// 这里是转发HTTPS之类的数据
 				send(info->getBorther()->getFd(),buf,len,0);
-
+				if(server->getDump())
+					std::cout
+					<<"=========================================="<<std::endl
+					<<buf<<std::endl;
 			}
-			if(server->getDump())
-				std::cout<<buf<<std::endl;
+
 		}
 	}/* 接收循环 */
 	return NULL;
