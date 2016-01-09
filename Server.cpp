@@ -266,11 +266,25 @@ void* Server::forwardUp(void* arg)
 			{
 				std::string header(buf);
 				if(ht==HT_HTTP)
+				{
 					server->config->exec("HTTP",header);
+					send(info->getBorther()->getFd(),header.data(),header.length(),0);
+				}
 				else
+				{
+					/*
+					* 把\r\n\r\n之前的数据分离，避免修改时破坏加密数据
+					*/
+					header = header.substr(0,header.find("\r\n\r\n"));
+					int byreadpos = header.length();
 					server->config->exec("HTTPS",header);
-				send(info->getBorther()->getFd(),header.data(),header.length(),0);
-				// 输出抓包信息
+					send(info->getBorther()->getFd(),header.data(),header.length(),0);
+					// 发送剩余的数据
+					if(byreadpos < len)
+						send(info->getBorther()->getFd(),((char*)buf) + byreadpos,len-byreadpos,0);
+
+				}
+				// 输出header信息
 				if(server->getDump())
 					std::cout
 					<<"=========================================="<<std::endl
@@ -278,12 +292,8 @@ void* Server::forwardUp(void* arg)
 			}
 			else
 			{
-				// 这里是转发HTTPS之类的数据
+				// 这里是转发HTTPS加密的数据
 				send(info->getBorther()->getFd(),buf,len,0);
-				if(server->getDump())
-					std::cout
-					<<"=========================================="<<std::endl
-					<<buf<<std::endl;
 			}
 
 		}
