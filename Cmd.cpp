@@ -58,6 +58,10 @@ void Cmd::eval(std::string& str, const std::string old)
 						ns = nsr.str();
 						const std::regex nsnp("Host\\s*:\\s*",std::regex::icase);
 						ns = std::regex_replace(ns,nsnp,"");
+
+						// 匹配端口
+						const std::regex nspp(":[0-9]+",std::regex::icase);
+						ns = std::regex_replace(ns,nspp,"");
 					}
 				}
 			}
@@ -78,6 +82,9 @@ void Cmd::eval(std::string& str, const std::string old)
 							ns = nsr.str();
 							ns = ns.substr(7,ns.length()-7);
 						}
+						// 匹配端口
+						const std::regex nspp(":[0-9]+",std::regex::icase);
+						ns = std::regex_replace(ns,nspp,"");
 					}
 				}
 			}

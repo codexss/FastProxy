@@ -275,7 +275,7 @@ void* Server::forwardUp(void* arg)
 					/*
 					* 把\r\n\r\n之前的数据分离，避免修改时破坏加密数据
 					*/
-					header = header.substr(0,header.find("\r\n\r\n"));
+					header = header.substr(0,header.find("\r\n\r\n")+4);
 					int byreadpos = header.length();
 					server->config->exec("HTTPS",header);
 					send(info->getBorther()->getFd(),header.data(),header.length(),0);
