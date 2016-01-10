@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 			// 如果当前UID不匹配
 			if (uid != getuid())
 			{
-				if (setuid(uid) == 0)
+				if (setuid(uid) == 0 && setgid(uid))
 				{
 					std::cout << "切换到UID:" << struid << "成功" << std::endl;
 				}
