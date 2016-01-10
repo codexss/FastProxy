@@ -163,9 +163,11 @@ int main(int argc, char* argv[])
 				{
 					if(fi == 0)
 					{
-						pthread_t tid;
-						pthread_create(&tid,NULL,runserver,&svr);
+						
+						pthread_t tid;	pthread_create(&tid,NULL,runserver,&svr);
+						
 						while (getppid() != 1) sleep(1);
+						pthread_kill(tid,SIGKILL);
 					}else{
 						wait(NULL);
 					}
