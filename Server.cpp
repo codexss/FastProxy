@@ -196,7 +196,7 @@ void* Server::forwardUp(void* arg)
 	int src=info->getFd();
 	char buf[1024*16];
 	int len;
-	while((len=recv(src,buf,sizeof(buf),0))>0)
+	while((len=recv(src,buf,sizeof(buf)-1,0))>0)
 	{
 
 		buf[len]=0;
@@ -205,10 +205,10 @@ void* Server::forwardUp(void* arg)
 				strncmp(buf,"GET",3)==0 ||
 				strncmp(buf,"POST",4)==0 ||
 				strncmp(buf,"HEAD",4)==0 ||
-				strncmp(buf,"PUT",4)==0 ||
-				strncmp(buf,"OPTIONS",4)==0 ||
-				strncmp(buf,"DELETE",4)==0 ||
-				strncmp(buf,"TRACE",4)==0
+				strncmp(buf,"PUT",3)==0 ||
+				strncmp(buf,"OPTIONS",7)==0 ||
+				strncmp(buf,"DELETE",6)==0 ||
+				strncmp(buf,"TRACE",5)==0
 		)
 			ht=HT_HTTP;
 		else if(strncmp(buf,"CONNECT",7)==0)
